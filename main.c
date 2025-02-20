@@ -19,6 +19,59 @@ typedef struct {
     unsigned int length;
 } Line;
 
+
+Pos rotate(Pos center, Pos point, float degrees);
+
+Line gen_line(Pos p1, Pos p2);
+
+Pos* read_data_file(char *path, size_t *length);
+
+void print_grid(char grid[height][width]);
+
+void add_line(char grid[height][width], Line line);
+
+
+int main() {
+    char grid[height][width];
+    for (int r=0; r<height; r++) {
+        for (int c=0; c<width; c++) {
+            grid[r][c] = ' ';
+        }
+    }
+
+    size_t num_pairs;
+    Pos *pairs = read_data_file("data.txt", &num_pairs);
+    Pos center = {20, 20};
+
+    for (int count=0; count<100; count++) {
+        for (int r=0; r<height; r++) {
+            for (int c=0; c<width; c++) {
+                grid[r][c] = ' ';
+            }
+        }
+        for (int i=0; i<num_pairs; i++) {
+            Pos p1 = *(pairs + i*2*sizeof(Pos));
+            Pos p2 = *(pairs + i*2*sizeof(Pos) + sizeof(Pos));
+            Line line = gen_line(p1, p2);
+            add_line(grid, line);
+            free(line.points);
+
+            p1 = rotate(center, p1, 5);
+            p2 = rotate(center, p2, 5);
+            memcpy(pairs + i*2*sizeof(Pos), &p1, sizeof(p1));
+            memcpy(pairs + i*2*sizeof(Pos) + sizeof(Pos), &p2, sizeof(p2));
+        }
+
+        print_grid(grid);
+        usleep(100000);
+    }
+    free(pairs);
+
+
+    return 0;
+}
+
+
 Pos rotate(Pos center, Pos point, float degrees) {
     float rad = (degrees * M_PI) / 180;
 
@@ -50,6 +103,9 @@ Line gen_line(Pos p1, Pos p2) {
         ratio = diff_y / diff_x;
     }
 
+    //Loop Twice. The first time figure out the length of the line. 
+    //Then allocate enough memory for that length, and fill in the
+    //memory with the points.
     for (int i=0; i<2; i++) {
         unsigned int count_x = 0;
         unsigned int count_y = 0;
@@ -92,6 +148,7 @@ Line gen_line(Pos p1, Pos p2) {
     return line_struct;
 }
 
+//Returns all of the points from the data file
 Pos* read_data_file(char *path, size_t *length) {
     Pos *pairs;
     FILE *file_ptr = fopen(path, "r");
@@ -160,44 +217,4 @@ void add_line(char grid[height][width], Line line) {
         unsigned int y = (line.points + i*sizeof(Pos))->y;
         grid[y][x] = 'X';
     }
-}
-
-int main() {
-    char grid[height][width];
-    for (int r=0; r<height; r++) {
-        for (int c=0; c<width; c++) {
-            grid[r][c] = ' ';
-        }
-    }
-
-    size_t num_pairs;
-    Pos *pairs = read_data_file("data.txt", &num_pairs);
-    Pos center = {20, 20};
-
-    for (int count=0; count<100; count++) {
-        for (int r=0; r<height; r++) {
-            for (int c=0; c<width; c++) {
-                grid[r][c] = ' ';
-            }
-        }
-        for (int i=0; i<num_pairs; i++) {
-            Pos p1 = *(pairs + i*2*sizeof(Pos));
-            Pos p2 = *(pairs + i*2*sizeof(Pos) + sizeof(Pos));
-            Line line = gen_line(p1, p2);
-            add_line(grid, line);
-            free(line.points);
-
-            p1 = rotate(center, p1, 5);
-            p2 = rotate(center, p2, 5);
-            memcpy(pairs + i*2*sizeof(Pos), &p1, sizeof(p1));
-            memcpy(pairs + i*2*sizeof(Pos) + sizeof(Pos), &p2, sizeof(p2));
-        }
-
-        print_grid(grid);
-        usleep(100000);
-    }
-    free(pairs);
-
-
-    return 0;
 }
