@@ -35,7 +35,7 @@ Pos3d rotateZ(Pos3d center, Pos3d point, float degrees);
 Line gen_line(Pos p1, Pos p2);
 
 int data_file_length(char *path);
-void read_data_file(char *path, Pos3d pairs[12][2]);
+void read_data_file(char *path, int length, Pos3d pairs[length][2]);
 
 void print_grid(char grid[height][width]);
 
@@ -55,7 +55,7 @@ int main() {
 
     int num_pairs = data_file_length(data_file);
     Pos3d pairs3d[num_pairs][2];
-    read_data_file(data_file, pairs3d);;
+    read_data_file(data_file, num_pairs, pairs3d);
 
     
     Pos3d centerX = {-1, 40, 40};
@@ -232,7 +232,7 @@ int data_file_length(char *path) {
 }
 
 //Returns all of the points from the data file
-void read_data_file(char *path, Pos3d pairs[12][2]) {
+void read_data_file(char *path, int length, Pos3d pairs[length][2]) {
     FILE *file_ptr = fopen(path, "r");
 
     if (file_ptr == NULL) {
